@@ -27,7 +27,7 @@ sql_create_booking_table = """CREATE TABLE IF NOT EXISTS booking(
 
 async def create_user(conn, user):
     """
-    Create a new project into the projects table
+    Create a new user into the users table
     :param conn:
     :param user:
     :return: user id
@@ -42,7 +42,7 @@ async def create_user(conn, user):
 
 async def create_booking(conn, booking):
     """
-    Create a new project into the projects table
+    Create a new booking into the booking table
     :param conn:
     :param booking:
     :return: booking id
@@ -100,7 +100,7 @@ async def show_bookings_from(conn, user_id):
 
 async def exist_in_users(conn, param):
     """
-    Checs if value exists in users
+    Checks if value exists in users
     :param conn:
     :param param:
     :return: True or False
