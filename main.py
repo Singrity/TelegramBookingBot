@@ -74,7 +74,7 @@ second_planet_amount_keyboard_buttons = [
 
 date_keyboard_buttons = [
     [
-        types.KeyboardButton(text="Этот этап возможно сделать с использованием каллендаря"),
+        types.KeyboardButton(text="Этот этап возможно сделать с использованием календаря"),
     ]
 ]
 
