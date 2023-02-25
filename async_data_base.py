@@ -6,21 +6,23 @@ from aiosqlite import Error
 set_event_loop(new_event_loop())
 
 
-
 sql_create_users_table = """ CREATE TABLE IF NOT EXISTS users (
                                         id INTEGER NOT NULL PRIMARY KEY,
                                         username TEXT,
                                         real_name TEXT,
-                                        phone TEXT
+                                        phone CHAR(15),
+                                        club_from TEXT NOT NULL
                                     ); """
+
 sql_create_booking_table = """CREATE TABLE IF NOT EXISTS booking(
     id INTEGER NOT NULL PRIMARY KEY,
-    booking_type TEXT,
-    amount INTEGER,
-    booking_date TEXT,
-    booking_time TEXT,
-    duration TEXT,
+    booking_type TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    booking_date DATE NOT NULL,
+    booking_time TIME NOT NULL,
+    duration TIME NOT NULL,
     user_id INTEGER NOT NULL,
+    club TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );"""
 
@@ -32,8 +34,8 @@ async def create_user(conn, user):
     :param user:
     :return: user id
     """
-    sql = ''' INSERT INTO users(id, username, real_name, phone)
-              VALUES(?,?,?,?) '''
+    sql = ''' INSERT INTO users(id, username, real_name, phone, club_from)
+              VALUES(?,?,?,?,?) '''
     cur = await conn.cursor()
     await cur.execute(sql, user)
     #await conn.commit()
@@ -47,8 +49,8 @@ async def create_booking(conn, booking):
     :param booking:
     :return: booking id
     """
-    sql = ''' INSERT INTO booking(booking_type, amount, booking_date, booking_time, duration, user_id)
-              VALUES(?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO booking(booking_type, amount, booking_date, booking_time, duration, user_id, club)
+              VALUES(?,?,?,?,?,?,?) '''
     cur = await conn.cursor()
     await cur.execute(sql, booking)
     #await conn.commit()
@@ -77,6 +79,8 @@ async def create_connection(db_file):
     conn = None
     try:
         conn = await aiosqlite.connect(db_file)
+        await create_table(conn, sql_create_booking_table)
+        await create_table(conn, sql_create_users_table)
         return conn
     except Error as e:
         print(e)
@@ -169,6 +173,45 @@ async def delete_all_bookings(conn):
     cur = await conn.cursor()
     await cur.execute(sql)
     await conn.commit()
+
+
+async def get_free_time(conn, date, current_date):
+    """
+    returns recorded time
+    :param conn:
+    :return: time
+    """
+
+    sql = 'SELECT booking_time, booking_date, duration FROM booking'
+    cur = await conn.cursor()
+    await cur.execute(sql)
+
+    async for row in cur:
+        time = row[0]
+        date = row[1]
+        duration = row[2]
+
+
+async def get_capacity(conn, club, type, time, date):
+    """
+    returns capacity
+    :param conn:
+    :param club:
+    :param type:
+    :return:
+    """
+    sql = f'SELECT SUM(amount) FROM booking WHERE club={club} and type={type} and booking_time={time} and booking_date={date}'
+    cur = await conn.cursor()
+    return await cur.execute(sql)
+
+
+async def create_tables(conn):
+    await create_table(conn, sql_create_users_table)
+    await create_table(conn, sql_create_booking_table)
+
+
+
+
 
 
 
